@@ -30,9 +30,9 @@ pipeline {
 
         stage('Run Docker Container') {
             steps {
-                bat '''
-                docker run -d -p 8000:8000 fastapi-assessment
-                '''
+                bat 'docker stop fastapi-container || exit 0'
+                bat 'docker rm fastapi-container || exit 0'
+                bat 'docker run -d -p 8000:8000 --name fastapi-container fastapi-assessment'
             }
         }
     }
