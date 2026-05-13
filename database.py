@@ -1,10 +1,14 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from typing import Generator
 
 
-DATABASE_URL = "mysql+pymysql://root:root@host.docker.internal:3306/sdtm_db"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mysql+pymysql://root:root@localhost:3306/sdtm_db"
+)
 
 engine = create_engine(
     DATABASE_URL,
