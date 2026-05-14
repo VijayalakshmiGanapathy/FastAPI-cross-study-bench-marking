@@ -121,7 +121,7 @@ def get_cross_study_metrics(
 
         if not rows:
             logger.error(
-                "No studies found for phase: %s",
+                "No studie found for phase: %s",
                 phase
             )
 
