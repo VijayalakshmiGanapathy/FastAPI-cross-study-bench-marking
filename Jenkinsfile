@@ -120,11 +120,19 @@ pipeline {
                         docker build -t fastapi-assessment .
                         '''
 
+                        /*
+                         * Tag Docker image for Docker Hub
+                         */
+                        bat '''
+                        docker tag ^
+                        fastapi-assessment ^
+                        vijayalakshmiganapathy/fastapi-assessment:v1
+                        '''
+
+                        echo 'Docker image built and tagged successfully'
+
                     } catch (Exception e) {
 
-                        /*
-                         * Stop pipeline if Docker build fails
-                         */
                         error(
                             "Docker image build failed: ${e.message}"
                         )
@@ -174,13 +182,23 @@ pipeline {
                 }
             }
         }
+
+        /**
+         * Temporary Stage:
+         * Verify Jenkins Kubernetes connectivity
+         */
         stage('Verify Kubernetes') {
 
             steps {
 
+                echo 'Verifying Kubernetes connectivity'
+
                 bat 'kubectl get nodes'
+
+                bat 'kubectl config current-context'
             }
         }
+
         /**
          * Stage 6:
          * Deploy application to Kubernetes
