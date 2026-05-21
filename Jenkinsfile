@@ -1,4 +1,3 @@
-
 /**
  * Jenkins Declarative Pipeline
  * -----------------------------------------
@@ -11,13 +10,14 @@
  * 2. Install Dependencies
  * 3. Run Tests
  * 4. Build Docker Image
- * 5. Deploy Docker Container
+ * 5. Push Docker Image
+ * 6. Deploy to Kubernetes
  */
 
 pipeline {
 
     /*
-     * Runs pipeline on any available Jenkins agent/node
+     * Runs pipeline on any available Jenkins node
      */
     agent any
 
@@ -25,28 +25,19 @@ pipeline {
 
         /**
          * Stage 1:
-         * Clone latest project code from GitHub repository
+         * Clone latest project source code
          */
         stage('Clone Repository') {
 
             steps {
 
-                // Display log message in Jenkins console
                 echo 'Cloning GitHub repository'
-
-                /*
-                 * If needed, Git SCM checkout can be added here.
-                 * Example:
-                 *
-                 * git branch: 'main',
-                 * url: 'https://github.com/username/repository.git'
-                 */
             }
         }
 
         /**
          * Stage 2:
-         * Install required Python dependencies
+         * Install Python dependencies
          */
         stage('Install Dependencies') {
 
@@ -59,14 +50,14 @@ pipeline {
                         echo 'Installing Python dependencies'
 
                         /*
-                         * Install all packages from requirements.txt
+                         * Install required packages
                          */
                         bat 'pip install -r requirements.txt'
 
                     } catch (Exception e) {
 
                         /*
-                         * Fail pipeline if dependency installation fails
+                         * Stop pipeline if installation fails
                          */
                         error(
                             "Dependency installation failed: ${e.message}"
@@ -78,7 +69,7 @@ pipeline {
 
         /**
          * Stage 3:
-         * Execute unit and integration test cases
+         * Execute unit and integration tests
          */
         stage('Run Tests') {
 
@@ -91,7 +82,7 @@ pipeline {
                         echo 'Running pytest test cases'
 
                         /*
-                         * Execute pytest test suite
+                         * Execute pytest framework
                          */
                         bat 'pytest'
 
@@ -110,7 +101,7 @@ pipeline {
 
         /**
          * Stage 4:
-         * Build Docker image for FastAPI application
+         * Build Docker image
          */
         stage('Build Docker Image') {
 
@@ -123,7 +114,7 @@ pipeline {
                         echo 'Building Docker image'
 
                         /*
-                         * Build Docker image using Dockerfile
+                         * Build Docker image
                          */
                         bat '''
                         docker build -t fastapi-assessment .
@@ -132,7 +123,7 @@ pipeline {
                     } catch (Exception e) {
 
                         /*
-                         * Fail pipeline if Docker build fails
+                         * Stop pipeline if Docker build fails
                          */
                         error(
                             "Docker image build failed: ${e.message}"
@@ -144,9 +135,13 @@ pipeline {
 
         /**
          * Stage 5:
-         * Deploy FastAPI Docker container
+         * Push Docker image to Docker Hub
+         *
+         * Purpose:
+         * Upload Docker image so Kubernetes
+         * can pull and deploy the application.
          */
-        stage('Run Docker Container') {
+        stage('Push Docker Image') {
 
             steps {
 
@@ -154,45 +149,74 @@ pipeline {
 
                     try {
 
-                        echo 'Stopping existing container if running'
+                        echo 'Pushing Docker image to Docker Hub'
 
                         /*
-                         * Stop existing running container
-                         * Ignore error if container does not exist
+                         * Push Docker image
+                         * using version tag
                          */
                         bat '''
-                        docker stop fastapi-container || exit 0
+                        docker push ^
+                        vijayalakshmiganapathy/fastapi-assessment:v1
                         '''
 
-                        echo 'Removing existing container if available'
-
-                        /*
-                         * Remove existing container
-                         * Ignore error if container does not exist
-                         */
-                        bat '''
-                        docker rm fastapi-container || exit 0
-                        '''
-
-                        echo 'Starting new Docker container'
-
-                        /*
-                         * Run new FastAPI Docker container
-                         */
-                        bat '''
-                        docker run -d ^
-                        -p 8000:8000 ^
-                        --name fastapi-container ^
-                        fastapi-assessment
-                        '''
+                        echo 'Docker image pushed successfully'
 
                     } catch (Exception e) {
 
                         /*
-                         * Fail pipeline if deployment fails
+                         * Stop pipeline if Docker push fails
                          */
                         error(
-                            "Docker container deployment failed: ${e.message}"
+                            "Docker image push failed: ${e.message}"
+                        )
+                    }
+                }
+            }
+        }
+
+        /**
+         * Stage 6:
+         * Deploy application to Kubernetes
+         *
+         * Purpose:
+         * Deploy FastAPI application using:
+         * - Kubernetes Deployment
+         * - Kubernetes Service
+         */
+        stage('Deploy to Kubernetes') {
+
+            steps {
+
+                script {
+
+                    try {
+
+                        echo 'Deploying application to Kubernetes'
+
+                        /*
+                         * Apply Deployment manifest
+                         */
+                        bat '''
+                        kubectl apply -f deployment.yaml
+                        '''
+
+                        /*
+                         * Apply Service manifest
+                         */
+                        bat '''
+                        kubectl apply -f service.yaml
+                        '''
+
+                        echo 'Kubernetes deployment completed successfully'
+
+                    } catch (Exception e) {
+
+                        /*
+                         * Stop pipeline if deployment fails
+                         */
+                        error(
+                            "Kubernetes deployment failed: ${e.message}"
                         )
                     }
                 }
@@ -202,7 +226,6 @@ pipeline {
 
     /**
      * Post-build actions
-     * Executes after pipeline completion
      */
     post {
 
@@ -231,4 +254,3 @@ pipeline {
         }
     }
 }
-
