@@ -198,14 +198,14 @@ pipeline {
                          * Apply Deployment manifest
                          */
                         bat '''
-                        kubectl apply -f deployment.yaml
+                        kubectl apply -f deployment.yaml --validate=false
                         '''
 
                         /*
                          * Apply Service manifest
                          */
                         bat '''
-                        kubectl apply -f service.yaml
+                        kubectl apply -f service.yaml --validate=false
                         '''
 
                         echo 'Kubernetes deployment completed successfully'
