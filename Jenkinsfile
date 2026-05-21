@@ -174,7 +174,13 @@ pipeline {
                 }
             }
         }
+        stage('Verify Kubernetes') {
 
+            steps {
+
+                bat 'kubectl get nodes'
+            }
+        }
         /**
          * Stage 6:
          * Deploy application to Kubernetes
