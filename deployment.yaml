@@ -26,5 +26,7 @@ spec:
 
         image: vijayalakshmiganapathy/fastapi-assessment:v1
 
+        imagePullPolicy: Always
+
         ports:
         - containerPort: 8000
