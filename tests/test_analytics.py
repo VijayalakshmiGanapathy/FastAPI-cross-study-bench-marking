@@ -70,3 +70,20 @@ def test_invalid_phase() -> None:
     data = response.json()
 
     assert "detail" in data
+
+def test_status_filter():
+
+    response = client.get(
+        "/api/v1/metrics/cross-study?status=Completed"
+    )
+
+    assert response.status_code == 200
+
+
+def test_invalid_status():
+
+    response = client.get(
+        "/api/v1/metrics/cross-study?status=Invalid"
+    )
+
+    assert response.status_code == 404

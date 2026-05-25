@@ -29,6 +29,7 @@ router = APIRouter()
 )
 def get_cross_study_metrics(
     phase: Optional[str] = Query(default=None),
+    status: Optional[str] = Query(default=None),
     include_history: bool = Query(default=False),
     db: Session = Depends(get_db)
 ):
@@ -126,6 +127,31 @@ def get_cross_study_metrics(
             )
 
             raise StudyNotFoundException(phase)
+        
+
+    if status:
+
+        logger.info(
+            "Applying status filter: %s",
+             status
+        )
+
+        rows = [
+            row for row in rows
+            if row.study.status == status
+        ]
+
+        if not rows:
+
+            logger.error(
+                "No studies found for status: %s",
+                status
+            )
+
+            raise StudyNotFoundException(
+                status
+            )
+
 
     studies_response = []
 
@@ -240,11 +266,14 @@ def get_cross_study_metrics(
 
     logger.info("Cross-study analytics completed")
 
-    return CrossStudyResponse(
-        generated_at=(
-            datetime.now(timezone.utc).isoformat()
+    return {
+        "generated_at": (
+             datetime.now(
+                timezone.utc
+            ).isoformat()
         ),
-        phase_filter=phase,
-        phase_benchmarks=phase_benchmarks,
-        studies=studies_response
-    )
+        "phase_filter": phase,
+        "status_filter": status,
+        "phase_benchmarks": phase_benchmarks,
+        "studies": studies_response
+    }
