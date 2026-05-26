@@ -2,30 +2,19 @@
  * Jenkins Declarative Pipeline
  * -----------------------------------------
  * Purpose:
- * Automates the CI/CD workflow for the
- * FastAPI Cross-Study Benchmarking project.
- *
- * Stages Included:
- * 1. Clone Repository
- * 2. Install Dependencies
- * 3. Run Tests
- * 4. Build Docker Image
- * 5. Push Docker Image
- * 6. Deploy to Kubernetes
+ * Automates CI/CD workflow for
+ * FastAPI Cross-Study Benchmarking project
  */
 
 pipeline {
 
-    /*
-     * Runs pipeline on any available Jenkins node
-     */
     agent any
 
     stages {
 
         /**
          * Stage 1:
-         * Clone latest project source code
+         * Clone repository
          */
         stage('Clone Repository') {
 
@@ -37,7 +26,7 @@ pipeline {
 
         /**
          * Stage 2:
-         * Install Python dependencies
+         * Install dependencies
          */
         stage('Install Dependencies') {
 
@@ -49,16 +38,12 @@ pipeline {
 
                         echo 'Installing Python dependencies'
 
-                        /*
-                         * Install required packages
-                         */
-                        bat 'pip install -r requirements.txt'
+                        bat '''
+                        pip install -r requirements.txt
+                        '''
 
                     } catch (Exception e) {
 
-                        /*
-                         * Stop pipeline if installation fails
-                         */
                         error(
                             "Dependency installation failed: ${e.message}"
                         )
@@ -69,7 +54,7 @@ pipeline {
 
         /**
          * Stage 3:
-         * Execute unit and integration tests
+         * Run tests
          */
         stage('Run Tests') {
 
@@ -79,18 +64,17 @@ pipeline {
 
                     try {
 
-                        echo 'Running pytest test cases'
+                        echo 'Running pytest'
 
-                        /*
-                         * Execute pytest framework
-                         */
-                        bat 'pytest'
+                        bat '''
+                        pytest ^
+                        --cov=. ^
+                        --cov-report=term ^
+                        --cov-fail-under=85
+                        '''
 
                     } catch (Exception e) {
 
-                        /*
-                         * Stop deployment if tests fail
-                         */
                         error(
                             "Test execution failed: ${e.message}"
                         )
@@ -101,7 +85,7 @@ pipeline {
 
         /**
          * Stage 4:
-         * Build Docker image
+         * Build Docker Image
          */
         stage('Build Docker Image') {
 
@@ -113,28 +97,23 @@ pipeline {
 
                         echo 'Building Docker image'
 
-                        /*
-                         * Build Docker image
-                         */
                         bat '''
-                        docker build -t fastapi-assessment .
+                        docker build ^
+                        -t fastapi-assessment:%BUILD_NUMBER% .
                         '''
 
-                        /*
-                         * Tag Docker image for Docker Hub
-                         */
                         bat '''
                         docker tag ^
-                        fastapi-assessment ^
-                        vijayalakshmiganapathy/fastapi-assessment:v1
+                        fastapi-assessment:%BUILD_NUMBER% ^
+                        vijayalakshmiganapathy/fastapi-assessment:%BUILD_NUMBER%
                         '''
 
-                        echo 'Docker image built and tagged successfully'
+                        echo 'Docker image built successfully'
 
                     } catch (Exception e) {
 
                         error(
-                            "Docker image build failed: ${e.message}"
+                            "Docker build failed: ${e.message}"
                         )
                     }
                 }
@@ -143,11 +122,7 @@ pipeline {
 
         /**
          * Stage 5:
-         * Push Docker image to Docker Hub
-         *
-         * Purpose:
-         * Upload Docker image so Kubernetes
-         * can pull and deploy the application.
+         * Push Docker Image
          */
         stage('Push Docker Image') {
 
@@ -157,26 +132,19 @@ pipeline {
 
                     try {
 
-                        echo 'Pushing Docker image to Docker Hub'
+                        echo 'Pushing Docker image'
 
-                        /*
-                         * Push Docker image
-                         * using version tag
-                         */
                         bat '''
                         docker push ^
-                        vijayalakshmiganapathy/fastapi-assessment:v1
+                        vijayalakshmiganapathy/fastapi-assessment:%BUILD_NUMBER%
                         '''
 
                         echo 'Docker image pushed successfully'
 
                     } catch (Exception e) {
 
-                        /*
-                         * Stop pipeline if Docker push fails
-                         */
                         error(
-                            "Docker image push failed: ${e.message}"
+                            "Docker push failed: ${e.message}"
                         )
                     }
                 }
@@ -184,29 +152,28 @@ pipeline {
         }
 
         /**
-         * Temporary Stage:
-         * Verify Jenkins Kubernetes connectivity
+         * Stage 6:
+         * Verify Kubernetes
          */
         stage('Verify Kubernetes') {
 
             steps {
 
-                echo 'Verifying Kubernetes connectivity'
+                echo 'Verifying Kubernetes'
 
-                bat 'kubectl get nodes'
+                bat '''
+                kubectl get nodes
+                '''
 
-                bat 'kubectl config current-context'
+                bat '''
+                kubectl config current-context
+                '''
             }
         }
 
         /**
-         * Stage 6:
-         * Deploy application to Kubernetes
-         *
-         * Purpose:
-         * Deploy FastAPI application using:
-         * - Kubernetes Deployment
-         * - Kubernetes Service
+         * Stage 7:
+         * Deploy to Kubernetes
          */
         stage('Deploy to Kubernetes') {
 
@@ -216,29 +183,23 @@ pipeline {
 
                     try {
 
-                        echo 'Deploying application to Kubernetes'
+                        echo 'Deploying to Kubernetes'
 
-                        /*
-                         * Apply Deployment manifest
-                         */
                         bat '''
-                        kubectl apply -f deployment.yaml --validate=false
+                        kubectl set image ^
+                        deployment/fastapi-deployment ^
+                        fastapi-container=vijayalakshmiganapathy/fastapi-assessment:%BUILD_NUMBER%
                         '''
 
-                        /*
-                         * Apply Service manifest
-                         */
                         bat '''
-                        kubectl apply -f service.yaml --validate=false
+                        kubectl rollout status ^
+                        deployment/fastapi-deployment
                         '''
 
-                        echo 'Kubernetes deployment completed successfully'
+                        echo 'Deployment completed successfully'
 
                     } catch (Exception e) {
 
-                        /*
-                         * Stop pipeline if deployment fails
-                         */
                         error(
                             "Kubernetes deployment failed: ${e.message}"
                         )
@@ -249,29 +210,20 @@ pipeline {
     }
 
     /**
-     * Post-build actions
+     * Post actions
      */
     post {
 
-        /*
-         * Executes if pipeline succeeds
-         */
         success {
 
             echo 'Pipeline executed successfully'
         }
 
-        /*
-         * Executes if pipeline fails
-         */
         failure {
 
             echo 'Pipeline execution failed'
         }
 
-        /*
-         * Executes regardless of pipeline result
-         */
         always {
 
             echo 'Jenkins pipeline execution completed'
