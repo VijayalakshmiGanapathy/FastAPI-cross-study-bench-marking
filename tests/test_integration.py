@@ -14,7 +14,6 @@ from fastapi.testclient import TestClient
 from main import app
 
 
-# Create FastAPI test client
 client = TestClient(app)
 
 
@@ -58,7 +57,11 @@ def test_phase_filter_integration():
     data = response.json()
 
     for study in data["studies"]:
-        assert study["phase"] == "Phase III"
+
+        assert (
+            study["phase"]
+            == "Phase III"
+        )
 
 
 def test_invalid_phase_integration():
@@ -78,7 +81,22 @@ def test_invalid_phase_integration():
 
     data = response.json()
 
-    assert "detail" in data
+    assert (
+        data["success"]
+        is False
+    )
+
+    assert (
+        data["error"]["code"]
+        == "NOT_FOUND"
+    )
+
+    assert (
+        data["error"]["message"]
+        == "No studies found for: InvalidPhase"
+    )
+
+    assert "trace_id" in data
 
 
 def test_include_history_integration():
@@ -102,4 +120,7 @@ def test_include_history_integration():
 
     if data["studies"]:
 
-        assert "run_history" in data["studies"][0]
+        assert (
+            "run_history"
+            in data["studies"][0]
+        )

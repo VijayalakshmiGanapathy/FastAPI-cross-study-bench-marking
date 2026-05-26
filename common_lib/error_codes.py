@@ -1,0 +1,14 @@
+from enum import Enum
+
+
+class ErrorCode(str, Enum):
+
+    NOT_FOUND = "NOT_FOUND"
+
+    BAD_REQUEST = "BAD_REQUEST"
+
+    VALIDATION_ERROR = "VALIDATION_ERROR"
+
+    DATABASE_ERROR = "DATABASE_ERROR"
+
+    INTERNAL_ERROR = "INTERNAL_ERROR"

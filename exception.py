@@ -1,14 +1,32 @@
-from fastapi import HTTPException
+from common_lib.exceptions import (
+    AppException
+)
+
+from common_lib.error_codes import (
+    ErrorCode
+)
 
 
-class StudyNotFoundException(HTTPException):
-    """
-    Custom exception raised when no studies
-    are found for the requested phase.
-    """
+class StudyNotFoundException(
+    AppException
+):
 
-    def __init__(self, phase: str):
+    def __init__(
+        self,
+        value: str
+    ):
+
         super().__init__(
-            status_code=404,
-            detail=f"No studies found for phase '{phase}'"
+
+            code=ErrorCode.NOT_FOUND,
+
+            message=(
+                f"No studies found for: {value}"
+            ),
+
+            http_status=404,
+
+            field=None,
+
+            context=None
         )
