@@ -37,132 +37,132 @@ def test_get_all_studies() -> None:
     assert "generated_at" in data
 
 
-# def test_phase_filter() -> None:
-#     """
-#     Test phase-based filtering.
+def test_phase_filter() -> None:
+    """
+    Test phase-based filtering.
 
-#     Validates:
-#     - query parameter handling
-#     - filtered API response
-#     """
+    Validates:
+    - query parameter handling
+    - filtered API response
+    """
 
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?phase=Phase I"
-#     )
+    response = client.get(
+        "/api/v1/metrics/cross-study?phase=Phase I"
+    )
 
-#     assert response.status_code == 200
+    assert response.status_code == 200
 
-#     data = response.json()
+    data = response.json()
 
-#     for study in data["studies"]:
-#         assert study["phase"] == "Phase I"
-
-
-# def test_invalid_phase() -> None:
-#     """
-#     Test invalid phase exception handling.
-
-#     Validates:
-#     - HTTP 404 response
-#     - proper error message
-#     """
-
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?phase=Invalid"
-#     )
-
-#     assert response.status_code == 404
-
-#     data = response.json()
-
-#     assert (
-#         data["success"]
-#         is False
-#     )
-
-#     assert (
-#         data["error"]["code"]
-#         == "NOT_FOUND"
-#     )
-
-#     assert (
-#         data["error"]["message"]
-#         == "No studies found for: Invalid"
-#     )
-
-#     assert (
-#         "trace_id"
-#         in data
-#     )
-
-# def test_status_filter():
-
-#     """
-#     Test status filtering.
-
-#     Validates:
-#     - query parameter handling
-#     - filtered API response
-#     """
-
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?status=Completed"
-#     )
-
-#     assert response.status_code == 200
+    for study in data["studies"]:
+        assert study["phase"] == "Phase I"
 
 
-# def test_invalid_status():
+def test_invalid_phase() -> None:
+    """
+    Test invalid phase exception handling.
 
-#     """
-#     Test invalid status exception handling.
+    Validates:
+    - HTTP 404 response
+    - proper error message
+    """
 
-#     Validates:
-#     - HTTP 404 response
-#     - proper error message
-#     """
+    response = client.get(
+        "/api/v1/metrics/cross-study?phase=Invalid"
+    )
 
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?status=Invalid"
-#     )
+    assert response.status_code == 404
 
-#     assert response.status_code == 404
+    data = response.json()
 
-# def test_history_true():
+    assert (
+        data["success"]
+        is False
+    )
 
-#     """
-#     Test include _history = true exception handling
-#     """
+    assert (
+        data["error"]["code"]
+        == "NOT_FOUND"
+    )
 
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?include_history=true"
-#     )
+    assert (
+        data["error"]["message"]
+        == "No studies found for: Invalid"
+    )
 
-#     assert response.status_code == 200
+    assert (
+        "trace_id"
+        in data
+    )
+
+def test_status_filter():
+
+    """
+    Test status filtering.
+
+    Validates:
+    - query parameter handling
+    - filtered API response
+    """
+
+    response = client.get(
+        "/api/v1/metrics/cross-study?status=Completed"
+    )
+
+    assert response.status_code == 200
 
 
-# def test_root():
+def test_invalid_status():
 
-#     """
-#     Testing root status code 
-#     """
+    """
+    Test invalid status exception handling.
 
-#     response = client.get("/")
+    Validates:
+    - HTTP 404 response
+    - proper error message
+    """
 
-#     assert response.status_code == 200
+    response = client.get(
+        "/api/v1/metrics/cross-study?status=Invalid"
+    )
+
+    assert response.status_code == 404
+
+def test_history_true():
+
+    """
+    Test include _history = true exception handling
+    """
+
+    response = client.get(
+        "/api/v1/metrics/cross-study?include_history=true"
+    )
+
+    assert response.status_code == 200
+
+
+def test_root():
+
+    """
+    Testing root status code 
+    """
+
+    response = client.get("/")
+
+    assert response.status_code == 200
 
 
 
 
-# def test_latest_metrics():
+def test_latest_metrics():
 
-#     db = SessionLocal()
+    db = SessionLocal()
 
-#     result = (
-#         get_latest_metrics_for_study(
-#             db,
-#             "AT-01"
-#         )
-#     )
+    result = (
+        get_latest_metrics_for_study(
+            db,
+            "AT-01"
+        )
+    )
 
-#     assert result is not None
+    assert result is not None

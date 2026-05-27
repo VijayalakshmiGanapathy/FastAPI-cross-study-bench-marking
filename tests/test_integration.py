@@ -39,88 +39,88 @@ def test_cross_study_metrics_endpoint():
     assert "studies" in data
 
 
-# def test_phase_filter_integration():
-#     """
-#     Test phase filtering integration.
+def test_phase_filter_integration():
+    """
+    Test phase filtering integration.
 
-#     Validates:
-#     - query parameter handling
-#     - filtered response generation
-#     """
+    Validates:
+    - query parameter handling
+    - filtered response generation
+    """
 
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?phase=Phase III"
-#     )
+    response = client.get(
+        "/api/v1/metrics/cross-study?phase=Phase III"
+    )
 
-#     assert response.status_code == 200
+    assert response.status_code == 200
 
-#     data = response.json()
+    data = response.json()
 
-#     for study in data["studies"]:
+    for study in data["studies"]:
 
-#         assert (
-#             study["phase"]
-#             == "Phase III"
-#         )
-
-
-# def test_invalid_phase_integration():
-#     """
-#     Test invalid phase handling.
-
-#     Validates:
-#     - exception handling
-#     - HTTP 404 response
-#     """
-
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?phase=InvalidPhase"
-#     )
-
-#     assert response.status_code == 404
-
-#     data = response.json()
-
-#     assert (
-#         data["success"]
-#         is False
-#     )
-
-#     assert (
-#         data["error"]["code"]
-#         == "NOT_FOUND"
-#     )
-
-#     assert (
-#         data["error"]["message"]
-#         == "No studies found for: InvalidPhase"
-#     )
-
-#     assert "trace_id" in data
+        assert (
+            study["phase"]
+            == "Phase III"
+        )
 
 
-# def test_include_history_integration():
-#     """
-#     Test validation history retrieval.
+def test_invalid_phase_integration():
+    """
+    Test invalid phase handling.
 
-#     Validates:
-#     - include_history functionality
-#     - nested response structure
-#     """
+    Validates:
+    - exception handling
+    - HTTP 404 response
+    """
 
-#     response = client.get(
-#         "/api/v1/metrics/cross-study?include_history=true"
-#     )
+    response = client.get(
+        "/api/v1/metrics/cross-study?phase=InvalidPhase"
+    )
 
-#     assert response.status_code == 200
+    assert response.status_code == 404
 
-#     data = response.json()
+    data = response.json()
 
-#     assert "studies" in data
+    assert (
+        data["success"]
+        is False
+    )
 
-#     if data["studies"]:
+    assert (
+        data["error"]["code"]
+        == "NOT_FOUND"
+    )
 
-#         assert (
-#             "run_history"
-#             in data["studies"][0]
-#         )
+    assert (
+        data["error"]["message"]
+        == "No studies found for: InvalidPhase"
+    )
+
+    assert "trace_id" in data
+
+
+def test_include_history_integration():
+    """
+    Test validation history retrieval.
+
+    Validates:
+    - include_history functionality
+    - nested response structure
+    """
+
+    response = client.get(
+        "/api/v1/metrics/cross-study?include_history=true"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "studies" in data
+
+    if data["studies"]:
+
+        assert (
+            "run_history"
+            in data["studies"][0]
+        )
