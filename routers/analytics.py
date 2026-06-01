@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.exc import SQLAlchemyError
 
 from exception import StudyNotFoundException
 
@@ -148,6 +149,30 @@ def get_cross_study_metrics(
 
             status = status.strip()
 
+            VALID_STATUSES = [
+                "Completed",
+                "In Progress",
+                "Pending"
+            ]
+
+            if status not in VALID_STATUSES:
+
+                logger.error(
+                    "Invalid status value: %s",
+                    status
+                )
+
+                raise AppException(
+
+                    code=ErrorCode.BAD_REQUEST,
+
+                    message=(
+                        f"Invalid status value: {status}"
+                    ),
+
+                    http_status=400
+                )
+
             logger.info(
                 "Applying status filter: %s",
                 status
@@ -162,12 +187,12 @@ def get_cross_study_metrics(
 
                 logger.error(
                     "No studies found for status: %s",
-                    status
+                     status
                 )
 
                 raise StudyNotFoundException(
-                    status
-                )
+                status
+            )
 
 
         studies_response = []
@@ -299,6 +324,25 @@ def get_cross_study_metrics(
 
         raise
 
+    except SQLAlchemyError as e:
+
+        logger.exception(
+            "Database error occurred"
+        )
+
+        raise AppException(
+
+            code=ErrorCode.DATABASE_ERROR,
+
+            message="Database operation failed",
+
+            http_status=500,
+
+            context={
+                "reason": str(e)
+            }
+        )
+
     except Exception as e:
 
         logger.exception(
@@ -309,9 +353,7 @@ def get_cross_study_metrics(
 
             code=ErrorCode.INTERNAL_ERROR,
 
-            message=(
-                "Internal server error"
-            ),
+            message="Internal server error",
 
             http_status=500,
 
