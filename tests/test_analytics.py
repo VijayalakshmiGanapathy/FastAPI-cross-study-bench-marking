@@ -118,15 +118,22 @@ def test_invalid_status():
     Test invalid status exception handling.
 
     Validates:
-    - HTTP 404 response
-    - proper error message
+    - HTTP 400 response
+    - BAD_REQUEST error code
     """
 
     response = client.get(
         "/api/v1/metrics/cross-study?status=Invalid"
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 400
+
+    data = response.json()
+
+    assert (
+        data["error"]["code"]
+        == "BAD_REQUEST"
+    )
 
 def test_history_true():
 
